@@ -35,14 +35,8 @@ selectedSink=$(echo "$sinks" | grep "$selection" | awk '{print $2}' | sed 's/\./
 echo "Selected Sink: $selectedSink"
 
 if [ -z "$selectedSink" ]; then
-    echo "Error finding sink number, exiting..."
+    echo "Error getting sink, exiting..."
     exit 1
-fi
-
-if [ "$selectedSink" == "$currDevice" ]; then
-    echo "Selected current device, exiting..."
-    exit 0
-fi
 
 wpctl set-default "$selectedSink"
 
