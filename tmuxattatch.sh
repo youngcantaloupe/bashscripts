@@ -1,6 +1,14 @@
 #!/bin/bash
 
-SESSION=$(gum choose --height 10 "home" "c++" "python" "bash")
+SESSIONS=$(tmux ls 2>/dev/null | cut -d: -f1)
+echo "$SESSIONS"
+
+if [ -z "$SESSIONS" ]; then
+    echo "No tmux sessions are currently running."
+    exit 1
+fi
+
+SESSION=$(gum choose --height 10 $SESSIONS)
 
 if [ "$SESSION" = "home" ]; then
     tmux has-session -t $SESSION 2>/dev/null
