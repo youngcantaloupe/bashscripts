@@ -1,8 +1,8 @@
 #!/bin/bash
 
 gum style \
-	--foreground 212 --border-foreground 212 --border double \
-	--align center --width 50 --margin "1 2" --padding "0 0" \
+	--foreground 15 --border-foreground 212 \
+	--align left --width 50 --margin "1 2" --padding "0 0" \
 	'
     ___             ___     
    /   | __  ______/ (_)___ 
@@ -20,7 +20,8 @@ while IFS= read -r line; do
     deviceNames+=("$(echo "$deviceName" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')")
 done <<< "$sinks"
 
-selection=$(gum choose --height 25 "${deviceNames[@]}" --header "Select Device:")
+selection=$(gum choose --height 8 "${deviceNames[@]}" --header "Select Device:") 
+
 
 currDevice=$(echo "$sinks" | grep "\*|$selection" | awk '{print $2}' | sed 's/\.//')
 
