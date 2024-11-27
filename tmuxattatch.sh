@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SESSIONS=$(tmux ls 2>/dev/null | cut -d: -f1)
-echo "$SESSIONS"
+#echo "$SESSIONS"
 
 if [ -z "$SESSIONS" ]; then
     echo "No tmux sessions are currently running."
