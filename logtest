@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: logtest
+# Description: Demonstrates logging and help flags with color output
+# Author: kakashi
+# Created: 2025-04-04
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# ─── Logging with Colors ─────────────────────────────────────────
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+RESET="\033[0m"
+
+log()   { echo -e "${GREEN}[INFO]${RESET}  $*" >&2; }
+warn()  { echo -e "${YELLOW}[WARN]${RESET}  $*" >&2; }
+error() { echo -e "${RED}[ERROR]${RESET} $*" >&2; }
+die()   { error "$*"; exit 1; }
+
+# ─── Help ────────────────────────────────────────────────────────
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    echo "Usage: $(basename "$0")"
+    echo
+    echo "Description:"
+    echo "  This is a demonstration of logging functions with color."
+    echo
+    echo "Options:"
+    echo "  -h, --help    Show this help message"
+    exit 0
+fi
+
+# ─── Main Logic ──────────────────────────────────────────────────
+log "This is a general info message."
+warn "This is just a warning, nothing critical."
+error "This is an error message, but script continues."
+
+if [[ "${1:-}" == "fail" ]]; then
+    die "Simulating a critical failure. Exiting."
+fi
+
+log "All tests passed. You're good to go."
+

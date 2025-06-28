@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: displayconfig
+# Description: select monitor display configurations
+# Author: kakashi
+# Created: 2025-04-04
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# ─── Logging ──────────────────────────────────────────────────────
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+RESET="\033[0m"
+
+log()   { echo -e "${GREEN}[INFO]${RESET}  $*" >&2; }
+warn()  { echo -e "${YELLOW}[WARN]${RESET}  $*" >&2; }
+error() { echo -e "${RED}[ERROR]${RESET} $*" >&2; }
+die()   { error "$*"; exit 1; }
+
+# ─── xrandr Monitor Settings ─────────────────────────────
+NZXT="DP-0"
+ZOWIE="HDMI-0"
+
+RES_1080="1920x1080"
+RES_2K="2560x1440"
+RES_3K="2880x1620"
+
+RR_60="60.00"
+RR_59="59.94"
+RR_120="120.00"
+RR_144="144.00"
+RR_164="164.54"
+RR_239="239.96"
+
+# ─── Monitor Configurations ──────────────────────────────────────
+enable_1080() {
+    log "Setting display to 1080p on NZXT (DP-0) at 164.54 Hz, disabling Zowie..."
+    xrandr --output "$ZOWIE" --off \
+        --output "$NZXT" --mode "$RES_1080" --rate "$RR_164" --primary
+    sleep 1
+    i3-msg restart
+}
+
+enable_3k() {
+    log "Setting display to 3K on NZXT at 59.94 Hz, and Zowie 1080p at 239.96 Hz..."
+    xrandr --output "$NZXT" --mode "$RES_3K" --rate "$RR_59" --primary \
+        --output "$ZOWIE" --mode "$RES_1080" --rate "$RR_239" --right-of "$NZXT"
+    sleep 1
+    i3-msg restart
+}
+
+enable_zowie() {
+    log "Setting display to Zowie (HDMI-0) 1080p at 239.96 Hz, disabling NZXT..."
+    xrandr --output "$NZXT" --off \
+        --output "$ZOWIE" --mode "$RES_1080" --rate "$RR_239" --primary
+    sleep 1
+    i3-msg restart
+}
+
+enable_dual() {
+    log "Setting dual display: NZXT at 2K 164.54 Hz (primary), Zowie 1080p at 239.96 Hz (right)..."
+    xrandr --output "$NZXT" --mode "$RES_2K" --rate "$RR_164" --primary \
+        --output "$ZOWIE" --mode "$RES_1080" --rate "$RR_239" --right-of "$NZXT"
+    sleep 1
+    i3-msg restart
+}
+
+# ─── Select Config w/ rofi -dmenu ────────────────────────────────────────
+choose_mode() {
+    local options=("3K-Dual" "Zowie-Only" "1080p-Minecraft" "Default-Dual")
+    local choice
+    local theme_path="$HOME/.config/rofi/combined.rasi"
+
+
+    if command -v rofi &>/dev/null; then
+        if [[ -f "$theme_path" ]]; then
+            choice=$(printf "%s\n" "${options[@]}" | rofi -dmenu -theme "$theme_path" -p "Choose Display Mode")
+        else
+            choice=$(printf "%s\n" "${options[@]}" | rofi -dmenu -p "Choose Display Mode")
+        fi
+    else
+        choice=$(printf "%s\n" "${options[@]}" | dmenu -p "Choose Display Mode")
+    fi
+
+    echo "$choice"
+}
+
+# ─── Main ──────────────────────────────────────────────────
+choice=$(choose_mode)
+
+case "$choice" in
+    "3K-Dual") enable_3k ;;
+    "Zowie-Only") enable_zowie ;;
+    "1080p-Minecraft") enable_1080 ;;
+    "Default-Dual") enable_dual ;;
+    *) warn "No valid selection made. Exiting." ;;
+esac

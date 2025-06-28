@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+runtime=$1
+endtime=$(date -ud "$runtime" +%s)
+
+WINDOW=$(xdotool selectwindow)
+
+while [[ $(date -u +%s) -le $endtime ]]
+do
+    xdotool click --window $WINDOW 1
+    sleep $2
+done

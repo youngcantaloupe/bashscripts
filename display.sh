@@ -1,0 +1,53 @@
+#!/bin/bash
+gum style \
+    --foreground 15 --border-foreground 212 \
+    --align left --width 50 --margin "1 2" --padding "0 0" \
+    '
+    ____  _            __
+   / __ \(_)________  / /___ ___  __
+  / / / / / ___/ __ \/ / __ `/ / / /
+ / /_/ / (__  ) /_/ / / /_/ / /_/ /
+/_____/_/____/ .___/_/\__,_/\__, /
+            /_/            /____/
+'
+
+
+# Define options
+options=(
+    "NZXT 1080p @ 164.54 | Zowie OFF"
+    "NZXT 3k @ 59.94 | Zowie 1080p @ 239.77"
+    "NZXT 2k @ 164.54 | Zowie 1080p @ 239.77"
+    "NZXT OFF | Zowie 1080p @ 239.77"
+)
+
+declare -A layoutScripts
+layoutScripts["NZXT 1080p @ 164.54 | Zowie OFF"]="$HOME/.local/bin/enable1080.sh"
+layoutScripts["NZXT 3k @ 59.94 | Zowie 1080p @ 239.77"]="$HOME/.local/bin/enable3k.sh"
+layoutScripts["NZXT 2k @ 164.54 | Zowie 1080p @ 239.77"]="$HOME/.local/bin/enabledual.sh"
+layoutScripts["Zowie Monitor Layout"]="$HOME/.local/bin/enablezowie.sh"
+
+# Prompt user to select layout
+selection=$(gum choose --height 10 "${options[@]}" --header "Select Monitor Layout:")
+
+# Exit if nothing selected
+if [ -z "$selection" ]; then
+    echo "No selection made. Exiting..."
+    exit 1
+fi
+
+script="${layoutScripts[$selection]}"
+echo "You selected: $selection"
+echo "Script to run: $script"
+
+# Confirm execution
+if gum confirm "Run this layout now?"; then
+    if [ -x "$script" ]; then
+        "$script"
+    else
+        echo "Script is not executable. Making it executable..."
+        chmod +x "$script"
+        "$script"
+    fi
+else
+    echo "Cancelled. No layout applied."
+fi

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: autoclicker
+# Description:
+# Author: kakashi
+# Created: 2025-04-04
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+IFS=$'\n\t'
+SCRIPT_NAME=$(basename "$0")
+
+# ─── Colors ──────────────────────────────────────────────────────
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+RESET="\033[0m"
+
+log()   { echo -e "${GREEN}[INFO]${RESET}  $*" >&2; }
+warn()  { echo -e "${YELLOW}[WARN]${RESET}  $*" >&2; }
+error() { echo -e "${RED}[ERROR]${RESET} $*" >&2; }
+die()   { error "$*"; exit 1; }
+
+# ─── Help ────────────────────────────────────────────────────────
+usage() {
+    echo "Usage: clicker <duration_in_seconds> <delay_in_seconds>"
+    echo
+    echo "Description:"
+    echo "  An auto-clicker with a selectable target window."
+    echo
+    echo "Options:"
+    echo "  -h, --help       Show this help message"
+    exit 0
+}
+
+# ─── Main ────────────────────────────────────────────────────────
+
+if [[ $# -lt 2 ]]; then
+    error "Usage: $SCRIPT_NAME <duration_seconds> <delay_seconds>"
+    exit 1
+fi
+
+DURATION="$1"
+DELAY="$2"
+
+END_TIME=$(( $(date +%s) + DURATION ))
+
+log "Click on the window to target..."
+WIN_ID=$(xdotool selectwindow)
+log "Selected window: $WIN_ID"
+
+while [[ $(date +%s) -le $END_TIME ]]; do
+    xdotool click --window "$WIN_ID" 1
+    sleep "$DELAY"
+done
+
+log "Done."
+
+

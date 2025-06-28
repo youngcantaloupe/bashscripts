@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: newscript
+# Description: Creates a new script in ~/.local/bin with standard template
+# -----------------------------------------------------------------------------
+
+SCRIPT_NAME="$1"
+DEST_DIR="$HOME/.local/bin"
+
+if [[ -z "$SCRIPT_NAME" ]]; then
+    echo "Usage: newscript <name>"
+    exit 1
+fi
+
+TARGET="$DEST_DIR/$SCRIPT_NAME"
+
+# Check if it already exists
+if [[ -f "$TARGET" ]]; then
+    echo "Script already exists: $TARGET"
+    exit 1
+fi
+
+mkdir -p "$DEST_DIR"
+
+# Generate script with template
+cat <<EOF > "$TARGET"
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: $SCRIPT_NAME
+# Description:
+# Author: $(whoami)
+# Created: $(date '+%Y-%m-%d')
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+IFS=\$'\n\t'
+
+# ─── Colors ──────────────────────────────────────────────────────
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+RESET="\033[0m"
+
+log()   { echo -e "\${GREEN}[INFO]\${RESET}  \$*" >&2; }
+warn()  { echo -e "\${YELLOW}[WARN]\${RESET}  \$*" >&2; }
+error() { echo -e "\${RED}[ERROR]\${RESET} \$*" >&2; }
+die()   { error "\$*"; exit 1; }
+
+# ─── Help ────────────────────────────────────────────────────────
+if [[ "\${1:-}" == "-h" || "\${1:-}" == "--help" ]]; then
+  echo "Usage: \$(basename "\$0") [options]"
+  echo
+  echo "Description:"
+  echo "    HERE."
+  echo
+  echo "Options:"
+  echo "  -h, --help"
+  exit 0
+fi
+
+# ─── Main ────────────────────────────────────────────────────────
+log "Executing..."
+
+
+log "Done."
+EOF
+
+chmod +x "$TARGET"
+${EDITOR:-nvim} "$TARGET"
+

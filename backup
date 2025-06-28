@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# -----------------------------------------------------------------------------
+# Script: backup
+# Description:
+# Author: kakashi
+# Created: 2025-05-01
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+IFS=$'\n\t'
+SCRIPT_NAME=$(basename "$0")
+
+# ─── Logging ──────────────────────────────────────────────────────
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+RESET="\033[0m"
+
+log()   { echo -e "${GREEN}[INFO]${RESET}  $*" >&2; }
+warn()  { echo -e "${YELLOW}[WARN]${RESET}  $*" >&2; }
+error() { echo -e "${RED}[ERROR]${RESET} $*" >&2; }
+die()   { error "$*"; exit 1; }
+
+# ─── Help ────────────────────────────────────────────────────────
+if [[ $# -lt 1 ]]; then
+    error "Usage: $SCRIPT_NAME /path/to/dir"
+    exit 1
+fi
+
+# ─── Main ────────────────────────────────────────────────────────
+
+SOURCE_PATH=$(realpath "$1")
+SOURCE_NAME=$(basename "$SOURCE_PATH")
+DEST_DIR="$HOME/Documents/Backups"
+TIMESTAMP=$(date +"%Y-%m-%d")
+ARCHIVE_NAME="${SOURCE_NAME}_backup_${TIMESTAMP}.tar.gz"
+ARCHIVE_PATH="$DEST_DIR/$ARCHIVE_NAME"
+
+log "Backing up '$SOURCE_PATH' to '$ARCHIVE_PATH'"
+
+mkdir -p "$DEST_DIR"
+
+#tar -czvf "$ARCHIVE_PATH" -C "$(dirname "$SOURCE_PATH")" "$SOURCE_NAME"
+
+TOTAL_SIZE=$(du -sb "$SOURCE_PATH" | cut -f1)
+
+tar -cf - -C "$(dirname "$SOURCE_PATH")" "$SOURCE_NAME" \
+    | pv -s "$TOTAL_SIZE" \
+    | gzip > "$ARCHIVE_PATH"
+
+if [[ $? -eq 0 ]]; then
+    log "Done."
+else
+    error "Failed."
+fi
